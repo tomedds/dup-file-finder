@@ -1,0 +1,10 @@
+
+logging:
+  level:
+    org.springframework.web: ERROR
+    name.tomedds: DEBUG
+
+spring.main.web-application-type: NONE
+
+
+

@@ -31,12 +31,21 @@ public class PathDetailsVisitor extends SimpleFileVisitor<Path> {
                                      BasicFileAttributes attr) {
 
         if (attr.isRegularFile()) {
-            try {
-                pathDetails.add(new PathDetail(path, attr.size(),
-                        new DigestUtils(MD5).digestAsHex(path.toFile())));
-            } catch (IOException ex) {
-                LOGGER.error("Error trying to get MD5 for file " + path.getFileName(), ex);
+
+            // For now, skip empty files
+
+            if (0 < attr.size()) {
+
+                try {
+                    pathDetails.add(new PathDetail(path, attr.size(),
+                            new DigestUtils(MD5).digestAsHex(path.toFile())));
+                } catch (IOException ex) {
+                    LOGGER.error("Error trying to get MD5 for file " + path.getFileName(), ex);
+                }
+            } else {
+                LOGGER.warn("Skipping empty file " + path.toString());
             }
+
         }
 
         return CONTINUE;

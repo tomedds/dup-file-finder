@@ -6,11 +6,13 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -34,33 +36,62 @@ public class DuplicateService {
     public DuplicateService() {
     }
 
+
     /**
      * Obtain a list of the files found in the given paths and determine which are duplicates
      *
      * @param roots
      */
-    public List<List<PathDetail>> identifyDuplicates(String[] roots) {
+    public Map<String, List<PathDetail>> identifyDuplicates(String[] roots) {
 
         List<PathDetail> fullList = Arrays.stream(roots)
                 .map(root -> this.listFileTree(root))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
+        /* We should be able to create a Map directly which contains each MD5
+        and a list of the files that match it.
+         Continue work on this later:
+        Map<String, List<PathDetail>> fullMap = Arrays.stream(roots)
+                .map(root -> this.listFileTree(root))
+                .flatMap(List::stream)
+                .collect(Collectors.toMap(pd -> pd.getMd5(), Function.identity(),
+                        (s,a) -> ));
+                        */
+
         LOGGER.debug("found details for " + fullList.size() + " files.");
+
+        Map<String, List<PathDetail>> detailMap = new HashMap<>();
+        // detailMap.computeIfPresent(pd.getMd5(), (key, value) -> detailMap.get(key).add(Function.identity());
+
+        for (PathDetail pd : fullList) {
+            if (detailMap.containsKey(pd.getMd5())) {
+                detailMap.get(pd.getMd5()).add(pd);
+            }
+            else {
+                List<PathDetail> pdList = new ArrayList<>();
+                pdList.add(pd);
+                detailMap.put(pd.getMd5(),pdList);
+            }
+
+        }
+
+        // now we pull each entry with a list size > 1
+        Map<String, List<PathDetail>> dupMap = detailMap.entrySet().stream().filter(pd -> pd.getValue().size() > 1)
+                .collect(Collectors.toMap(pd -> pd.getKey(), pd-> pd.getValue()));
 
         LOGGER.error("using dummy code in method");
 
         // for now, we have no duplicates
 
-        return new ArrayList(new ArrayList<PathDetail>());
+        return dupMap;
     }
 
     /**
-     *
      * @param duplicateFiles
      */
-    public void generateCsv(List<List<PathDetail>> duplicateFiles) {
-        LOGGER.debug("generating CSV for " + duplicateFiles.size() + " files.");
+    public void generateCsv(Map<String, List<PathDetail>> duplicateFiles) {
+        LOGGER.debug("generating CSV for " + duplicateFiles.size() + " matches.");
     }
 
     /**

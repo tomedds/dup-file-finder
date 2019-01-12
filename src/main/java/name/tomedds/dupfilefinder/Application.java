@@ -9,23 +9,23 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Application implements CommandLineRunner {
 
-    //  Logger LOGGER = LoggerFactory.getLogger(Application.class);
-
-    private static Logger LOGGER = LoggerFactory
-            .getLogger(Application.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
-        LOGGER.info("STARTING THE APPLICATION");
         SpringApplication.run(Application.class, args);
-        LOGGER.info("APPLICATION FINISHED");
     }
 
     @Override
     public void run(String... args) {
-        LOGGER.info("EXECUTING : command line runner");
 
-        for (int i = 0; i < args.length; ++i) {
-            LOGGER.info("args[{}]: {}", i, args[i]);
+        if (args.length < 1) {
+            LOGGER.error("Usage: much specify at least one path");
         }
+
+        DuplicateService duplicateService = new DuplicateService();
+
+        // Determine the list of duplicates and then generate a CSV with the results
+        duplicateService.generateCsv( duplicateService.identifyDuplicates(args));
+
     }
 }

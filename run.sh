@@ -1,7 +1,4 @@
-#!/bin/sh -x
-
-./gradlew bootRun -Pargs=one,two 
-
-# ./gradlew bootRun -Pargs=--customArgument=custom
-# ./gradlew bootRun -Pargs=--spring.main.banner-mode=off,--customArgument=custom
-
+#!/bin/bash -x
+JAVA_EXE=/usr/bin/java
+JAR=./build/libs/dup-file-finder-0.0.1-SNAPSHOT.jar
+$JAVA_EXE -jar $JAR ~/tmp ~/dev/courses

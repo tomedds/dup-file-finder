@@ -24,7 +24,7 @@ repositories {
 }
 
 bootJar {
-    mainClassName = 'name.tomedds.mileageservice.Application'
+    mainClassName = 'name.tomedds.dupfilefinder.Application'
 }
 
 bootRun {

@@ -22,7 +22,6 @@ import static org.apache.commons.codec.digest.MessageDigestAlgorithms.MD5;
  * Implementation of FileVisitor used in walking the file tree.
  * Exclude files that are smaller than the specified size,
  * and collect attributes (size, MD5) for each selected file.
- *
  */
 @Component
 public class PathDetailsVisitor extends SimpleFileVisitor<Path> {
@@ -41,20 +40,20 @@ public class PathDetailsVisitor extends SimpleFileVisitor<Path> {
     // Populate the file details for file
 
     @Override
-    public FileVisitResult visitFile(Path path,  BasicFileAttributes attr) {
+    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
 
-        if (attr.isRegularFile()) {
+        if (attrs.isRegularFile()) {
 
-            if (attr.size() > 1024 * minFileSize) {
+            if (Selectors.matchesCriteria(path.getFileName().toString(), attrs.size(), attrs.lastModifiedTime(), minFileSize)) {
 
                 try {
-                    pathDetails.add(new PathDetail(path, attr.size(),
+                    pathDetails.add(new PathDetail(path, attrs.size(),
                             new DigestUtils(MD5).digestAsHex(path.toFile())));
                 } catch (IOException ex) {
                     LOGGER.error("Error trying to get MD5 for file " + path.getFileName(), ex);
                 }
             } else {
-               // LOGGER.info("Skipping small file " + path.toString());
+                // LOGGER.info("Skipping small file " + path.toString());
             }
 
         }

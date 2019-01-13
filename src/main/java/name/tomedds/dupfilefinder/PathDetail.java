@@ -8,7 +8,6 @@ public final class PathDetail {
     private long fileSize;
     private String md5;
 
-
     public PathDetail(Path path, long fileSize, String md5) {
         this.path = path;
         this.fileSize = fileSize;
@@ -26,4 +25,6 @@ public final class PathDetail {
     public String getMd5() {
         return md5;
     }
+
+
 }

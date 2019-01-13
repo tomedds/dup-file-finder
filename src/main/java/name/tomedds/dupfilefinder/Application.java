@@ -2,6 +2,7 @@ package name.tomedds.dupfilefinder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,6 +16,12 @@ public class Application implements CommandLineRunner {
         SpringApplication.run(Application.class, args);
     }
 
+    @Autowired
+    DuplicateService duplicateService;
+
+    @Autowired
+    CsvGenerator csvGenerator;
+
     @Override
     public void run(String... args) {
 
@@ -22,10 +29,8 @@ public class Application implements CommandLineRunner {
             LOGGER.error("Usage: much specify at least one path");
         }
 
-        DuplicateService duplicateService = new DuplicateService();
-
         // Determine the list of duplicates and then generate a CSV with the results
-        duplicateService.generateCsv( duplicateService.identifyDuplicates(args));
+        csvGenerator.generateCsv( duplicateService.identifyDuplicates(args));
 
     }
 }

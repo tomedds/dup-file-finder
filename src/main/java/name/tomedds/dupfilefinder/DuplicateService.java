@@ -2,34 +2,25 @@ package name.tomedds.dupfilefinder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 /**
- * Overview for application:
- * <p>
- * - Get starting point in filesystem.
- * <p>
- * - Do a recursive search of files (not directories)
- * - for each file:
- * -- get the size and the MD5 checksum
- * -- store in the db table the directory, filename, checksum, size?
- * - determine where there are duplicates
- * - create a CSV with the results
- */
+    Process a list of files checking for duplicates
+  */
 
-@Component
+@Service
 public class DuplicateService {
+
+    @Autowired
+    PathDetailsVisitor pathDetailsVisitor;
 
     final Logger LOGGER = LoggerFactory.getLogger(DuplicateService.class);
 
@@ -44,55 +35,46 @@ public class DuplicateService {
      */
     public Map<String, List<PathDetail>> identifyDuplicates(String[] roots) {
 
+        /*
+           Collect the list of files for review.
+         */
+
         List<PathDetail> fullList = Arrays.stream(roots)
                 .map(root -> this.listFileTree(root))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
-        /* We should be able to create a Map directly which contains each MD5
-        and a list of the files that match it.
-         Continue work on this later:
-        Map<String, List<PathDetail>> fullMap = Arrays.stream(roots)
-                .map(root -> this.listFileTree(root))
-                .flatMap(List::stream)
-                .collect(Collectors.toMap(pd -> pd.getMd5(), Function.identity(),
-                        (s,a) -> ));
-                        */
+
+        for (PathDetail pd1: fullList) {
+            System.out.println(pd1.getPath().toString());
+        }
 
         LOGGER.debug("found details for " + fullList.size() + " files.");
 
         Map<String, List<PathDetail>> detailMap = new HashMap<>();
-        // detailMap.computeIfPresent(pd.getMd5(), (key, value) -> detailMap.get(key).add(Function.identity());
 
         for (PathDetail pd : fullList) {
+
+            // If the Map already has this key, then add the new item to the existing (List) value
+            // Otherwise add the new list
+
             if (detailMap.containsKey(pd.getMd5())) {
-                detailMap.get(pd.getMd5()).add(pd);
-            }
-            else {
-                List<PathDetail> pdList = new ArrayList<>();
-                pdList.add(pd);
-                detailMap.put(pd.getMd5(),pdList);
+                List currList = detailMap.get(pd.getMd5());
+                currList.add(pd);
+                detailMap.put(pd.getMd5(), currList);
+            } else {
+                detailMap.put(pd.getMd5(), new ArrayList<>(Arrays.asList(pd)));
             }
 
         }
 
         // now we pull each entry with a list size > 1
         Map<String, List<PathDetail>> dupMap = detailMap.entrySet().stream().filter(pd -> pd.getValue().size() > 1)
-                .collect(Collectors.toMap(pd -> pd.getKey(), pd-> pd.getValue()));
-
-        LOGGER.error("using dummy code in method");
-
-        // for now, we have no duplicates
+                .collect(Collectors.toMap(pd -> pd.getKey(), pd -> pd.getValue()));
 
         return dupMap;
     }
 
-    /**
-     * @param duplicateFiles
-     */
-    public void generateCsv(Map<String, List<PathDetail>> duplicateFiles) {
-        LOGGER.debug("generating CSV for " + duplicateFiles.size() + " matches.");
-    }
 
     /**
      * Get a list of Paths for the files in the specified directory.
@@ -100,17 +82,21 @@ public class DuplicateService {
      * @param root
      * @return
      */
-    private final List<PathDetail> listFileTree(String root) {
 
-        List<PathDetail> pathDetails = new ArrayList<>();
+   private final List<PathDetail> listFileTree(String root) {
+
+        LOGGER.debug("searching " + root);
+        
+        pathDetailsVisitor.resetPathDetails();
 
         try {
-            Files.walkFileTree(Paths.get(root), new PathDetailsVisitor(pathDetails));
+            Files.walkFileTree(Paths.get(root), pathDetailsVisitor);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return pathDetails;
+        LOGGER.debug("found " + pathDetailsVisitor.getPathDetails().size() + " files in " + root);
+        return pathDetailsVisitor.getPathDetails();
 
     }
 

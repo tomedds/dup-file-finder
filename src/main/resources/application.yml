@@ -6,5 +6,8 @@ logging:
 
 spring.main.web-application-type: NONE
 
+# define application-specific properties
+# minFileSize - ignore files smaller than this size (Kb)
 
+dupfilefinder.minFileSize: 5
 

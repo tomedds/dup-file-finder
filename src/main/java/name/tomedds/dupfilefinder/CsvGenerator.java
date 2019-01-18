@@ -1,5 +1,6 @@
 package name.tomedds.dupfilefinder;
 
+import name.tomedds.dupfilefinder.path.PathDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -7,13 +8,9 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
-
 
 /**
  * Overview for application:
@@ -93,6 +90,8 @@ public class CsvGenerator {
                 writer.write(outBuf.toString());
             }
             writer.close();
+
+            LOGGER.error("Wrote CSV with " + duplicateFiles.values().size() + " rows for duplicate files to  " + CSV_FILE);
 
         } catch (IOException ex) {
             LOGGER.error("Unable to create output file ", ex);

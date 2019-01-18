@@ -91,7 +91,7 @@ public class CsvGenerator {
             }
             writer.close();
 
-            LOGGER.error("Wrote CSV with " + duplicateFiles.values().size() + " rows for duplicate files to  " + CSV_FILE);
+            LOGGER.info("Wrote CSV with " + duplicateFiles.values().size() + " rows for duplicate files to  " + CSV_FILE);
 
         } catch (IOException ex) {
             LOGGER.error("Unable to create output file ", ex);

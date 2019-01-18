@@ -14,14 +14,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ApplicationTest {
 
 	@Autowired
-	private DuplicateService duplicateService;
+	private FilterConfig filterConfig;
 
 	Logger LOGGER = LoggerFactory.getLogger(ApplicationTest.class);
 
 	@Test
 	public void contextLoads() {
 		LOGGER.info("testing ability to load Spring context");
-		assertThat(duplicateService).isNotNull();
+		assertThat(filterConfig).isNotNull();
 
 	}
 

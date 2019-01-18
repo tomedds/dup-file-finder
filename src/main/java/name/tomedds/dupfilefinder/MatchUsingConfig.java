@@ -19,7 +19,7 @@ public class MatchUsingConfig implements MatchPredicate {
 
     public Boolean test(Path path, BasicFileAttributes bfa) {
         // for now, just test file size
-        return (bfa.size()  > filterConfig.getMinFileSize());
+        return (bfa.isRegularFile() && bfa.size()  > filterConfig.getMinFileSize());
     }
 
 
